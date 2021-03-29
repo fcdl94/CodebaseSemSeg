@@ -39,7 +39,7 @@ class Trainer:
 
         self.model, self.optimizer = amp.initialize(self.model, self.optimizer, opt_level=opts.opt_level)
 
-        self.criterion = nn.CrossEntropyLoss(ignore_index=255, reduction='mean')
+        self.criterion = nn.CrossEntropyLoss(ignore_index=255, reduction='none')
         self.reduction = HardNegativeMining() if opts.hnm else MeanReduction()
 
     def distribute(self):
@@ -75,8 +75,8 @@ class Trainer:
             outputs = model(images)
 
             # xxx Cross Entropy Loss
-            # loss = self.reduction(self.criterion(outputs, labels), labels)  # B x H x W
-            loss = self.criterion(outputs, labels)
+            loss = self.reduction(self.criterion(outputs, labels), labels)  # B x H x W
+            # loss = self.criterion(outputs, labels)
 
             loss_tot = loss
 
