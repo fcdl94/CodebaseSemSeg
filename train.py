@@ -92,11 +92,11 @@ class Trainer:
             interval_loss += loss.item()
             interval_loss += l_reg.item() if l_reg != 0. else 0.
 
-            _, prediction = outputs.max(dim=1)  # B, H, W
-            labels = labels.cpu().numpy()
-            prediction = prediction.cpu().numpy()
-            if metrics is not None:
-                metrics.update(labels, prediction)
+            # _, prediction = outputs.max(dim=1)  # B, H, W
+            # labels = labels.cpu().numpy()
+            # prediction = prediction.cpu().numpy()
+            # if metrics is not None:
+            #     metrics.update(labels, prediction)
 
             if (cur_step + 1) % print_int == 0:
                 interval_loss = interval_loss / print_int
@@ -133,7 +133,6 @@ class Trainer:
         metrics.reset()
         model = self.model
         device = self.device
-        criterion = self.criterion
         logger = self.logger
         model.eval()
 
@@ -148,7 +147,7 @@ class Trainer:
 
                 outputs = model(images)
 
-                loss = criterion(outputs, labels)
+                loss = self.reduction(self.criterion(outputs, labels), labels)
 
                 class_loss += loss.item()
 

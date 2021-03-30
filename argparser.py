@@ -24,8 +24,8 @@ def get_argparser():
     parser.add_argument("--local_rank", type=int, default=0)
     parser.add_argument("--random_seed", type=int, default=42,
                         help="random seed (default: 42)")
-    parser.add_argument("--num_workers", type=int, default=2,
-                        help='number of workers (default: 2)')
+    parser.add_argument("--num_workers", type=int, default=8,
+                        help='number of workers (default: 8)')
     parser.add_argument('--opt_level', type=str, choices=['O0', 'O1', 'O2', 'O3'], default='O0')
     parser.add_argument("--device", type=int, default=None,
                         help='Specify the device you want to use.')
