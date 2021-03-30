@@ -76,7 +76,6 @@ class Trainer:
 
             # xxx Cross Entropy Loss
             loss = self.reduction(self.criterion(outputs, labels), labels)  # B x H x W
-            # loss = self.criterion(outputs, labels)
 
             loss_tot = loss
 
@@ -92,11 +91,11 @@ class Trainer:
             interval_loss += loss.item()
             interval_loss += l_reg.item() if l_reg != 0. else 0.
 
-            # _, prediction = outputs.max(dim=1)  # B, H, W
-            # labels = labels.cpu().numpy()
-            # prediction = prediction.cpu().numpy()
-            # if metrics is not None:
-            #     metrics.update(labels, prediction)
+            _, prediction = outputs.max(dim=1)  # B, H, W
+            labels = labels.cpu().numpy()
+            prediction = prediction.cpu().numpy()
+            if metrics is not None:
+                metrics.update(labels, prediction)
 
             if (cur_step + 1) % print_int == 0:
                 interval_loss = interval_loss / print_int

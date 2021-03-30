@@ -136,13 +136,14 @@ def main(opts):
         # =====  Train  =====
         start = time.time()
         epoch_loss = model.train(cur_epoch=cur_epoch, train_loader=train_loader,
-                                 metrics=None, print_int=opts.print_interval)
+                                 metrics=train_metrics, print_int=opts.print_interval)
         train_score = train_metrics.get_results()
         end = time.time()
 
         len_ep = int(end - start)
         logger.info(f"End of Epoch {cur_epoch}/{opts.epochs}, Average Loss={epoch_loss[0] + epoch_loss[1]:.4f}, "
                     f"Class Loss={epoch_loss[0]:.4f}, Reg Loss={epoch_loss[1]}\n"
+                    f"Train_Acc={train_score['Overall Acc']:.4f}, Train_Iou={train_score['Mean IoU']:.4f} "
                     f"\n -- time: {len_ep // 60}:{len_ep % 60} -- ")
         logger.info(f"I will finish in {len_ep * (opts.epochs - cur_epoch) // 60} minutes")
 
