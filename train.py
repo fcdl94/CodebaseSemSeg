@@ -3,9 +3,8 @@ from torch import distributed
 import torch.nn as nn
 from segmentation_module import make_model
 from utils.scheduler import get_scheduler
-from apex.parallel import DistributedDataParallel
-from apex import amp
 from utils.loss import HardNegativeMining, MeanReduction
+from torch.nn.parallel import DistributedDataParallel
 
 
 class Trainer:
@@ -37,16 +36,16 @@ class Trainer:
         self.scheduler = get_scheduler(opts, self.optimizer)
         logger.debug("Optimizer:\n%s" % self.optimizer)
 
-        self.model, self.optimizer = amp.initialize(self.model, self.optimizer, opt_level=opts.opt_level)
-
         self.criterion = nn.CrossEntropyLoss(ignore_index=255, reduction='none')
         self.reduction = HardNegativeMining() if opts.hnm else MeanReduction()
 
     def distribute(self):
+        opts = self.opts
         if self.model is not None:
             # Put the model on GPU
             self.distributed = True
-            self.model = DistributedDataParallel(self.model, delay_allreduce=True)
+            self.model = DistributedDataParallel(self.model, device_ids=[opts.local_rank],
+                                                 output_device=opts.local_rank, find_unused_parameters=False)
 
     def train(self, cur_epoch, train_loader, metrics=None, print_int=10):
         """Train and return epoch loss"""
@@ -77,10 +76,8 @@ class Trainer:
             # xxx Cross Entropy Loss
             loss = self.reduction(self.criterion(outputs, labels), labels)  # B x H x W
 
-            loss_tot = loss
-
-            with amp.scale_loss(loss_tot, optim) as scaled_loss:
-                scaled_loss.backward()
+            loss_tot = loss + reg_loss
+            loss_tot.backward()
 
             optim.step()
             if scheduler is not None:
